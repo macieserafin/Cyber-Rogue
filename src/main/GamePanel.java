@@ -31,6 +31,7 @@ public class GamePanel extends JPanel implements Runnable {
     public CollisionChecker cChecker = new CollisionChecker(this);
     public Player player = new Player(this, keyH);
     TileManager tileM = new TileManager(this);
+    public BulletManager bulletManager = new BulletManager(this);
 
 
     public GamePanel() {
@@ -85,7 +86,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();
+        player.update();     bulletManager.update();
     }
 
     public void paintComponent(Graphics g) {
@@ -95,7 +96,11 @@ public class GamePanel extends JPanel implements Runnable {
 
         tileM.draw(g2);
 
+        bulletManager.draw(g2);
+
         player.draw(g2);
+
+
 
         g2.dispose();
     }

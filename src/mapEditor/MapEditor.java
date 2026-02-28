@@ -1,33 +1,47 @@
 package mapEditor;
 
+import tile.Tile;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 public class MapEditor {
-    private static int ROWS;
-    private static int COLS;
+
     private static final int TILE_SIZE = 20;
-    private int selectedTile = 0;
-    private int[][] map;
-    private JButton[][] buttons;
     private static final String MAP_DIR = "src/mapEditor/maps";
 
+    private final int ROWS;
+    private final int COLS;
+
+    private int selectedTile = 0;
+    private final int[][] map;
+    private final JButton[][] buttons;
+
+    private final Tile[] tiles = new Tile[6];
+
     public MapEditor(int rows, int cols) {
-        ROWS = rows;
-        COLS = cols;
-        map = new int[ROWS][COLS];
-        buttons = new JButton[ROWS][COLS];
+        this.ROWS = rows;
+        this.COLS = cols;
+
+        this.map = new int[ROWS][COLS];
+        this.buttons = new JButton[ROWS][COLS];
+
+        initTiles();
 
         JFrame frame = new JFrame("Map Editor");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(COLS * TILE_SIZE + 200, ROWS * TILE_SIZE + 100);
+        frame.setSize(COLS * TILE_SIZE + 240, ROWS * TILE_SIZE + 120);
         frame.setLayout(new BorderLayout());
 
-        JPanel gridPanel = new JPanel(new GridLayout(ROWS, COLS));
+        JPanel gridPanel = new JPanel(new GridLayout(ROWS, COLS, 0, 0));
         JScrollPane scrollPane = new JScrollPane(gridPanel);
         frame.add(scrollPane, BorderLayout.CENTER);
 
@@ -35,19 +49,28 @@ public class MapEditor {
             for (int col = 0; col < COLS; col++) {
                 JButton button = new JButton();
                 button.setPreferredSize(new Dimension(TILE_SIZE, TILE_SIZE));
-                button.setBackground(getTileColor(0));
+                button.setMargin(new Insets(0, 0, 0, 0));
+                button.setFocusable(false);
+                button.setBorderPainted(false);
+                button.setContentAreaFilled(false);
+                button.setOpaque(true);
+
+                setButtonTile(button, 0);
+
                 int finalRow = row;
                 int finalCol = col;
                 button.addActionListener(e -> {
                     map[finalRow][finalCol] = selectedTile;
-                    button.setBackground(getTileColor(selectedTile));
+                    setButtonTile(button, selectedTile);
                 });
+
                 buttons[row][col] = button;
                 gridPanel.add(button);
             }
         }
 
-        JPanel tilePanel = new JPanel(new GridLayout(5, 1));
+        JPanel tilePanel = new JPanel(new GridLayout(0, 1, 6, 6));
+        tilePanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         frame.add(tilePanel, BorderLayout.EAST);
 
         JButton grassButton = new JButton("Grass (0)");
@@ -80,23 +103,57 @@ public class MapEditor {
         frame.setVisible(true);
     }
 
-    private Color getTileColor(int tileType) {
-        return switch (tileType) {
-            case 0 -> Color.GREEN;
-            case 1 -> Color.GRAY;
-            case 2 -> Color.BLUE;
-            case 3 -> Color.BLACK;
-            case 4 -> Color.RED;
-            case 5 -> Color.YELLOW;
-            default -> Color.WHITE;
-        };
+    private void initTiles() {
+        // 0
+        tiles[0] = new Tile();
+        tiles[0].image = loadTileImage("tiles/grass.png");
+
+        // 1
+        tiles[1] = new Tile();
+        tiles[1].image = loadTileImage("tiles/wall.png");
+        tiles[1].collision = true;
+
+        // 2
+        tiles[2] = new Tile();
+        tiles[2].image = loadTileImage("tiles/water.png");
+        tiles[2].collision = true;
+
+        // 3
+        tiles[3] = new Tile();
+        tiles[3].image = loadTileImage("tiles/earth.png");
+
+        // 4
+        tiles[4] = new Tile();
+        tiles[4].image = loadTileImage("tiles/tree.png");
+        tiles[4].collision = true;
+
+        // 5
+        tiles[5] = new Tile();
+        tiles[5].image = loadTileImage("tiles/sand.png");
+    }
+
+    private BufferedImage loadTileImage(String resourcePath) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new IllegalStateException("Brak zasobu: " + resourcePath + " (sprawdź folder resources)");
+            }
+            return ImageIO.read(in);
+        } catch (IOException e) {
+            throw new RuntimeException("Nie udało się wczytać obrazka: " + resourcePath, e);
+        }
+    }
+
+    private void setButtonTile(JButton button, int tileType) {
+        BufferedImage img = tiles[tileType].image;
+        Image scaled = img.getScaledInstance(TILE_SIZE, TILE_SIZE, Image.SCALE_FAST);
+        button.setIcon(new ImageIcon(scaled));
     }
 
     private void resetMap() {
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
                 map[row][col] = 0;
-                buttons[row][col].setBackground(getTileColor(0));
+                setButtonTile(buttons[row][col], 0);
             }
         }
     }
@@ -115,10 +172,12 @@ public class MapEditor {
                     }
                     writer.newLine();
                 }
-                JOptionPane.showMessageDialog(null, "Mapa zapisana jako " + fullPath);
             }
+
+            JOptionPane.showMessageDialog(null, "Mapa zapisana jako:\n" + fullPath.toAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Błąd zapisu mapy: " + e.getMessage());
         }
     }
 

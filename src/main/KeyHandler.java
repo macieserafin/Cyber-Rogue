@@ -8,6 +8,7 @@ import java.util.Deque;
 public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
     public boolean upShootPressed, downShootPressed, leftShootPressed, rightShootPressed;
+    public boolean shiftPressed, spacePressed;
 
 
 
@@ -45,6 +46,13 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_RIGHT) {
             rightShootPressed = true;
         }
+
+        if (code == KeyEvent.VK_SPACE) {
+            spacePressed = true;
+        }
+        if (code == KeyEvent.VK_SHIFT) {
+            shiftPressed = true;
+        }
     }
 
     @Override
@@ -75,6 +83,13 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_RIGHT) {
             rightShootPressed = false;
+        }
+
+        if (code == KeyEvent.VK_SPACE) {
+            spacePressed = false;
+        }
+        if (code == KeyEvent.VK_SHIFT) {
+            shiftPressed = false;
         }
     }
 }

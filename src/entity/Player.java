@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import entity.Bullet;
 
 public class Player extends Entity {
 
@@ -21,12 +22,19 @@ public class Player extends Entity {
     private double velX = 0.0;
     private double velY = 0.0;
 
-    private double accel = 0.69;
+    private double accel = 0.5;
     private double maxSpeed = 4;
-    private double friction = 0.69; // im bliżej 1.0 tym dłużej się ślizga
+    private double friction = 0.5; // im bliżej 1.0 tym dłużej się ślizga
 
     private double worldXf;
     private double worldYf;
+
+    public String combatDirection;
+    BufferedImage upShoot, downShoot, leftShoot, rightShoot;
+
+    private int shotCooldownCounter = 0;
+    private int shotCooldownFrames = 12; // 12 klatek przy 60 FPS -> 5 strzałów na sekundę
+
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
@@ -52,6 +60,7 @@ public class Player extends Entity {
         speed = 4;
 
         direction = "idle";
+        combatDirection = "idle";
     }
 
     public void getPlayerImage() {
@@ -83,6 +92,25 @@ public class Player extends Entity {
     public void update() {
 
         boolean movingInput = keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed;
+
+        double currentMaxSpeed;
+        double currentAccel;
+        combatDirection = "idle";
+
+        if (shotCooldownCounter > 0) {
+            shotCooldownCounter--;
+        }
+
+
+        if (keyH.shiftPressed) {
+            currentMaxSpeed = 6.0; // sprint speed
+            currentAccel = 1;   // sprint acceleration
+        }
+        else {
+            currentMaxSpeed = maxSpeed; // normal speed (4.0)
+            currentAccel = accel;       // normal accel (0.69)
+        }
+
 
         //UPDATE DIRECTION FROM VELOCITY
 
@@ -125,7 +153,6 @@ public class Player extends Entity {
                 velX = 0;
             }
         }
-
         if (keyH.upPressed && !keyH.downPressed) {
             if (velY > 0) {
                 velY = 0;
@@ -137,47 +164,97 @@ public class Player extends Entity {
             }
         }
 
+
         //APPLY ACCELERATION FROM INPUT
 
+
         if (keyH.leftPressed && !keyH.rightPressed) {
-            velX -= accel;
+            velX -= currentAccel;
         }
         else if (keyH.rightPressed && !keyH.leftPressed) {
-            velX += accel;
+            velX += currentAccel;
         }
-
         if (keyH.upPressed && !keyH.downPressed) {
-            velY -= accel;
+            velY -= currentAccel;
         }
         else if (keyH.downPressed && !keyH.upPressed) {
-            velY += accel;
+            velY += currentAccel;
         }
+
 
         //CLAMP MAXIMUM VELOCITY
 
-        if (velX > maxSpeed) {
-            velX = maxSpeed;
+        if (velX > currentMaxSpeed) {
+            velX = currentMaxSpeed;
         }
-        if (velX < -maxSpeed) {
-            velX = -maxSpeed;
+        if (velX < -currentMaxSpeed) {
+            velX = -currentMaxSpeed;
         }
-        if (velY > maxSpeed) {
-            velY = maxSpeed;
+        if (velY > currentMaxSpeed) {
+            velY = currentMaxSpeed;
         }
-        if (velY < -maxSpeed) {
-            velY = -maxSpeed;
+        if (velY < -currentMaxSpeed) {
+            velY = -currentMaxSpeed;
         }
+
+        //COMBAT
+
+        boolean isShooting = keyH.upShootPressed || keyH.downShootPressed || keyH.leftShootPressed || keyH.rightShootPressed;
+
+        if (keyH.upShootPressed) {
+            combatDirection = "up";
+            currentMaxSpeed = 2.5;
+        }
+        else if (keyH.downShootPressed) {
+            combatDirection = "down";
+            currentMaxSpeed = 2.5;
+        }
+        else if (keyH.leftShootPressed) {
+            combatDirection = "left";
+            currentMaxSpeed = 2.5;
+        }
+        else if (keyH.rightShootPressed) {
+            combatDirection = "right";
+            currentMaxSpeed = 2.5;
+        }
+        else {
+            combatDirection = "idle";
+        }
+
+        if (isShooting && !combatDirection.equals("idle")) {
+
+            if (shotCooldownCounter == 0) {
+
+                double startX = worldX + (gp.tileSize / 2.0);
+                double startY = worldY + (gp.tileSize / 2.0);
+
+                Bullet bullet = new Bullet.Builder(gp.tileSize)
+                        .startPosition(startX, startY)
+                        .direction(combatDirection)
+                        .speed(10)
+                        .rangeTiles(5)
+                        .damage(1)
+                        .build();
+
+                gp.bulletManager.addBullet(bullet);
+
+                shotCooldownCounter = shotCooldownFrames;
+            }
+        }
+
 
         // NORMALIZE DIAGONAL MOVEMENT
 
+
+
         double speedLength = Math.sqrt(velX * velX + velY * velY);
 
-        if (speedLength > maxSpeed) {
-            velX = (velX / speedLength) * maxSpeed;
-            velY = (velY / speedLength) * maxSpeed;
-        }
+        if (speedLength > currentMaxSpeed) {
+            velX = (velX / speedLength) * currentMaxSpeed;
+            velY = (velY / speedLength) * currentMaxSpeed;}
 
         //APPLY FRICTION WHEN NO INPUT IS PRESENT
+
 
         if (!keyH.leftPressed && !keyH.rightPressed) {
             velX *= friction;
@@ -185,6 +262,9 @@ public class Player extends Entity {
         if (!keyH.upPressed && !keyH.downPressed) {
             velY *= friction;
         }
+
+
+
 
         //APPLY MOVEMENT IF NO COLLISION
 
@@ -199,6 +279,12 @@ public class Player extends Entity {
             velX *= 0.3;
             velY *= 0.3;
         }
+
+
+
+
+
+
 
         //SPRITE ANIMATION CONTROL
 
@@ -232,50 +318,58 @@ public class Player extends Entity {
 
         BufferedImage image = null;
 
-        if(direction.equals("idle")) {
-            if(spriteNum == 1) {
-                image = idle1;
-            }
-            if(spriteNum == 2) {
-                image = idle2;
-            }
-        }
-        else{
-            switch(direction) {
-                case "up":
-                    if(spriteNum == 1) {
-                        image = up1;
-                    }
-                    if(spriteNum == 2) {
-                        image = up2;
-                    }
-                    break;
-                case "left":
-                    if(spriteNum == 1) {
-                        image = left1;
-                    }
-                    if(spriteNum == 2) {
-                        image = left2;
-                    }
-                    break;
-                case "right":
-                    if(spriteNum == 1) {
-                        image = right1;
-                    }
-                    if(spriteNum == 2) {
-                        image = right2;
-                    }
-                    break;
-                case "down":
-                    if(spriteNum == 1) {
-                        image = down1;
-                    }
-                    if(spriteNum == 2) {
-                        image = down2;
-                    }
-                    break;
-            }
+        if(combatDirection.equals("idle")) {
+            if (direction.equals("idle")) {
+                if (spriteNum == 1) {
+                    image = idle1;
+                }
+                if (spriteNum == 2) {
+                    image = idle2;
+                }
+            } else {
+                switch (direction) {
+                    case "up":
+                        if (spriteNum == 1) {
+                            image = up1;
+                        }
+                        if (spriteNum == 2) {
+                            image = up2;
+                        }
+                        break;
+                    case "left":
+                        if (spriteNum == 1) {
+                            image = left1;
+                        }
+                        if (spriteNum == 2) {
+                            image = left2;
+                        }
+                        break;
+                    case "right":
+                        if (spriteNum == 1) {
+                            image = right1;
+                        }
+                        if (spriteNum == 2) {
+                            image = right2;
+                        }
+                        break;
+                    case "down":
+                        if (spriteNum == 1) {
+                            image = down1;
+                        }
+                        if (spriteNum == 2) {
+                            image = down2;
+                        }
+                        break;
+                }
 
+            }
+        }else {
+        switch (combatDirection) {
+            case "up" : image = upShoot; break;
+            case "down" : image = downShoot; break;
+            case "left" : image = leftShoot; break;
+            case "right": image = rightShoot ; break;
+        }
         }
 
         g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
