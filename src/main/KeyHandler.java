@@ -2,9 +2,14 @@ package main;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
+    public boolean upShootPressed, downShootPressed, leftShootPressed, rightShootPressed;
+
+
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -27,6 +32,19 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_D) {
             rightPressed = true;
         }
+
+        if (code == KeyEvent.VK_UP) {
+            upShootPressed = true;
+        }
+        if (code == KeyEvent.VK_DOWN) {
+            downShootPressed = true;
+        }
+        if (code == KeyEvent.VK_LEFT) {
+            leftShootPressed = true;
+        }
+        if (code == KeyEvent.VK_RIGHT) {
+            rightShootPressed = true;
+        }
     }
 
     @Override
@@ -44,6 +62,19 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_D) {
             rightPressed = false;
+        }
+
+        if (code == KeyEvent.VK_UP) {
+            upShootPressed = false;
+        }
+        if (code == KeyEvent.VK_DOWN) {
+            downShootPressed = false;
+        }
+        if (code == KeyEvent.VK_LEFT) {
+            leftShootPressed = false;
+        }
+        if (code == KeyEvent.VK_RIGHT) {
+            rightShootPressed = false;
         }
     }
 }

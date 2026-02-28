@@ -53,18 +53,27 @@ public class MapEditor {
         JButton grassButton = new JButton("Grass (0)");
         JButton wallButton = new JButton("Wall (1)");
         JButton waterButton = new JButton("Water (2)");
+        JButton earthButton = new JButton("Earth (3)");
+        JButton treeButton = new JButton("Tree (4)");
+        JButton sandButton = new JButton("Sand (5)");
         JButton resetButton = new JButton("Reset");
         JButton exportButton = new JButton("Export Map");
 
         grassButton.addActionListener(e -> selectedTile = 0);
         wallButton.addActionListener(e -> selectedTile = 1);
         waterButton.addActionListener(e -> selectedTile = 2);
+        earthButton.addActionListener(e -> selectedTile = 3);
+        treeButton.addActionListener(e -> selectedTile = 4);
+        sandButton.addActionListener(e -> selectedTile = 5);
         resetButton.addActionListener(e -> resetMap());
         exportButton.addActionListener(e -> exportMap());
 
         tilePanel.add(grassButton);
         tilePanel.add(wallButton);
         tilePanel.add(waterButton);
+        tilePanel.add(earthButton);
+        tilePanel.add(treeButton);
+        tilePanel.add(sandButton);
         tilePanel.add(resetButton);
         tilePanel.add(exportButton);
 
@@ -76,6 +85,9 @@ public class MapEditor {
             case 0 -> Color.GREEN;
             case 1 -> Color.GRAY;
             case 2 -> Color.BLUE;
+            case 3 -> Color.BLACK;
+            case 4 -> Color.RED;
+            case 5 -> Color.YELLOW;
             default -> Color.WHITE;
         };
     }
