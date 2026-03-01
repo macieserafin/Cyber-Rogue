@@ -40,6 +40,20 @@ public class Player extends Entity {
 
     int hasKey = 0;
 
+    // MELEE ATTACK STATE
+    private boolean meleeAttacking = false;
+
+    private int meleeFrame = 0;
+
+
+
+    private final int MELEE_WINDUP_FRAMES = 6;   // króciutka pauza: attack1
+    private final int MELEE_STRIKE_FRAMES = 5;   // szybkie uderzenie: attack2
+    private final int MELEE_RECOVER_FRAMES = 10; // ciężar po uderzeniu
+
+
+    private boolean meleeAttackHeldLastFrame = false;
+
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
@@ -112,7 +126,6 @@ public class Player extends Entity {
 
         double currentMaxSpeed;
         double currentAccel;
-        combatDirection = "idle";
 
         if (shotCooldownCounter > 0) {
             shotCooldownCounter--;
@@ -161,7 +174,7 @@ public class Player extends Entity {
         pickUpObject(objIndex);
 
 
-        // walidacja OPPOSITE DIRECTION BRAKING
+        // OPPOSITE DIRECTION BRAKING
 
         if (keyH.leftPressed && !keyH.rightPressed) {
             if (velX > 0) {
@@ -248,7 +261,7 @@ public class Player extends Entity {
                 combatDirection = "idle";
             }
 
-            if (isShooting && !combatDirection.equals("idle")) {
+            if (isShooting) {
 
                 if (shotCooldownCounter == 0) {
 
@@ -271,38 +284,39 @@ public class Player extends Entity {
             }
 
         }
-        if(combatState == CombatState.MELEE) {
-            boolean isAttacking = keyH.upShootPressed || keyH.downShootPressed || keyH.leftShootPressed || keyH.rightShootPressed;
+        if (combatState == CombatState.MELEE) {
 
-            if (keyH.upShootPressed) {
-                combatDirection = "up";
-                currentMaxSpeed = 2.5;
+            boolean attackHeld =
+                    keyH.upShootPressed || keyH.downShootPressed || keyH.leftShootPressed || keyH.rightShootPressed;
+
+            boolean attackJustPressed = attackHeld && !meleeAttackHeldLastFrame;
+            meleeAttackHeldLastFrame = attackHeld;
+
+            if (attackJustPressed) {
+
+                if (keyH.upShootPressed) combatDirection = "up";
+                else if (keyH.downShootPressed) combatDirection = "down";
+                else if (keyH.leftShootPressed) combatDirection = "left";
+                else combatDirection = "right";
+
+                if (!meleeAttacking) {
+                    startMeleeAttack();
+                }
             }
-            else if (keyH.downShootPressed) {
-                combatDirection = "down";
-                currentMaxSpeed = 2.5;
-            }
-            else if (keyH.leftShootPressed) {
-                combatDirection = "left";
-                currentMaxSpeed = 2.5;
-            }
-            else if (keyH.rightShootPressed) {
-                combatDirection = "right";
-                currentMaxSpeed = 2.5;
-            }
-            else {
+            else if (!meleeAttacking) {
                 combatDirection = "idle";
             }
 
-
+            if (meleeAttacking) {
+                updateMeleeAttack();
+                currentMaxSpeed = 1.2;
+                velX *= 0.85;
+                velY *= 0.85;
+            }
         }
 
 
-
-
         // NORMALIZE DIAGONAL MOVEMENT
-
-
 
         double speedLength = Math.sqrt(velX * velX + velY * velY);
 
@@ -390,6 +404,12 @@ public class Player extends Entity {
                     gp.obj[i] = null;
                     gp.playSoundEffect(4);
 
+                case "Chest":
+                    if(hasKey > 0){
+                        gp.obj[i] = null;
+                        hasKey--;
+                        gp.playSoundEffect(2);
+                    }
             }
         }
 
@@ -397,9 +417,6 @@ public class Player extends Entity {
 
 
     public void draw(Graphics2D g2){
-
-//        g2.setColor(Color.white);
-//        g2.fillRect(x, y, gp.tileSize, gp.tileSize);
 
         BufferedImage image = null;
 
@@ -457,40 +474,34 @@ public class Player extends Entity {
                     case "right": image = rightShoot ; break;
                 }
             }
-            if(combatState == CombatState.MELEE){
-                switch (combatDirection) {
-                    case "up":
-                        if (spriteNum == 1) {
-                            image = upAttack2;
-                        }
-                        if (spriteNum == 2) {
-                            image = upAttack1;
-                        }
-                        break;
-                    case "left":
-                        if (spriteNum == 1) {
-                            image = leftAttack2;
-                        }
-                        if (spriteNum == 2) {
-                            image = leftAttack1;
-                        }
-                        break;
-                    case "right":
-                        if (spriteNum == 1) {
-                            image = rightAttack2;
-                        }
-                        if (spriteNum == 2) {
-                            image = rightAttack1;
-                        }
-                        break;
-                    case "down":
-                        if (spriteNum == 1) {
-                            image = downAttack2;
-                        }
-                        if (spriteNum == 2) {
-                            image = downAttack1;
-                        }
-                        break;
+            if (combatState == CombatState.MELEE) {
+
+                if (!meleeAttacking) {
+                } else {
+
+                    boolean useAttack2 = false;
+
+                    int strikeStart = MELEE_WINDUP_FRAMES;
+                    int strikeEnd = MELEE_WINDUP_FRAMES + MELEE_STRIKE_FRAMES;
+
+                    if (meleeFrame >= strikeStart && meleeFrame < strikeEnd) {
+                        useAttack2 = true;
+                    }
+
+                    switch (combatDirection) {
+                        case "up":
+                            image = useAttack2 ? upAttack2 : upAttack1;
+                            break;
+                        case "down":
+                            image = useAttack2 ? downAttack2 : downAttack1;
+                            break;
+                        case "left":
+                            image = useAttack2 ? leftAttack2 : leftAttack1;
+                            break;
+                        case "right":
+                            image = useAttack2 ? rightAttack2 : rightAttack1;
+                            break;
+                    }
                 }
             }
         }
@@ -499,6 +510,11 @@ public class Player extends Entity {
 
         Point p = computeDrawPosition(drawW, drawH);
         g2.drawImage(image, p.x, p.y, drawW, drawH, null);
+
+        g2.setFont(new Font("Consolas", Font.PLAIN, 18));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Combat mode (Q): " + combatState, 30, 30);
+
 
     }
 
@@ -537,6 +553,36 @@ public class Player extends Entity {
         }
 
         return new Point(drawX, drawY);
+    }
+
+    private void startMeleeAttack() {
+        meleeAttacking = true;
+        meleeFrame = 0;
+        gp.playSoundEffect(5);
+
+        velX *= 0.4;
+        velY *= 0.4;
+    }
+
+    private void stopMeleeAttack() {
+        meleeAttacking = false;
+        meleeFrame = 0;
+        combatDirection = "idle";
+    }
+
+    private void updateMeleeAttack() {
+        meleeFrame++;
+
+        int total = MELEE_WINDUP_FRAMES + MELEE_STRIKE_FRAMES + MELEE_RECOVER_FRAMES;
+
+        // meleeDamage()
+        // int strikeStart = MELEE_WINDUP_FRAMES;
+        // int strikeEnd = MELEE_WINDUP_FRAMES + MELEE_STRIKE_FRAMES;
+        // if (meleeFrame == strikeStart) { meleeDamage(); }
+
+        if (meleeFrame >= total) {
+            stopMeleeAttack();
+        }
     }
 }
 
