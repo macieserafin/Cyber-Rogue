@@ -1,6 +1,7 @@
 package main;
 
 import entity.Player;
+import object.Boots;
 import object.Chest;
 import object.Door;
 import object.Key;
@@ -29,6 +30,10 @@ public class AssetSetter {
             gp.obj[3] = new Door();
             gp.obj[3].worldX = 32 * gp.tileSize;
             gp.obj[3].worldY = 23 * gp.tileSize;
+
+            gp.obj[4] = new Boots();
+            gp.obj[4].worldX = 34 * gp.tileSize;
+            gp.obj[4].worldY = 20 * gp.tileSize;
 
         }
 }

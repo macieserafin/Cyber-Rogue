@@ -108,12 +108,12 @@ public class Player extends Entity {
 
 
         if (keyH.shiftPressed) {
-            currentMaxSpeed = 6.0; // sprint speed
-            currentAccel = 1;   // sprint acceleration
+            currentMaxSpeed = maxSpeed + 2.2; // sprint speed
+            currentAccel = accel + 0.5;   // sprint acceleration
         }
         else {
-            currentMaxSpeed = maxSpeed; // normal speed (4.0)
-            currentAccel = accel;       // normal accel (0.69)
+            currentMaxSpeed = maxSpeed;
+            currentAccel = accel;
         }
 
 
@@ -245,6 +245,7 @@ public class Player extends Entity {
                         .build();
 
                 gp.bulletManager.addBullet(bullet);
+                gp.playSoundEffect(1);
 
                 shotCooldownCounter = shotCooldownFrames;
             }
@@ -325,15 +326,22 @@ public class Player extends Entity {
                 case "Key":
                     hasKey++;
                     gp.obj[i] = null;
-                    System.out.println("Key :" + hasKey);
+                    gp.playSoundEffect(3);
                     break;
-                    case "Door":
+
+                case "Door":
                         if(hasKey > 0){
                             gp.obj[i] = null;
                             hasKey--;
-                            System.out.println("Key :" + hasKey);
+                            gp.playSoundEffect(2);
                         }
                         break;
+
+                case "Boots":
+                    maxSpeed += 3;
+                    gp.obj[i] = null;
+                    gp.playSoundEffect(4);
+
             }
         }
 
