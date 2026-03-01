@@ -9,6 +9,7 @@ public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
     public boolean upShootPressed, downShootPressed, leftShootPressed, rightShootPressed;
     public boolean shiftPressed, spacePressed;
+    public boolean qPressed;
 
 
 
@@ -53,6 +54,9 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_SHIFT) {
             shiftPressed = true;
         }
+        if (code == KeyEvent.VK_Q) {
+            qPressed = true;
+        }
     }
 
     @Override
@@ -90,6 +94,10 @@ public class KeyHandler implements KeyListener {
         }
         if (code == KeyEvent.VK_SHIFT) {
             shiftPressed = false;
+        }
+
+        if (code == KeyEvent.VK_Q) {
+            qPressed = false;
         }
     }
 }

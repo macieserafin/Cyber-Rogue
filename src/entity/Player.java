@@ -31,9 +31,12 @@ public class Player extends Entity {
 
     public String combatDirection;
     BufferedImage upShoot, downShoot, leftShoot, rightShoot;
+    BufferedImage upAttack1, downAttack1, leftAttack1, rightAttack1, upAttack2, downAttack2, leftAttack2, rightAttack2;
 
     private int shotCooldownCounter = 0;
     private int shotCooldownFrames = 12; // 12 klatek przy 60 FPS -> 5 strzałów na sekundę
+
+    CombatState combatState = CombatState.RANGE;
 
     int hasKey = 0;
 
@@ -82,10 +85,19 @@ public class Player extends Entity {
             idle1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/player_idle_1.png")));
             idle2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/player_idle_2.png")));
 
-            upShoot    = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/player_up_combat.png")));
-            downShoot  = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/player_down_combat.png")));
-            leftShoot  = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/player_left_combat.png")));
-            rightShoot = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/player_right_combat.png")));
+            upShoot    = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_up_shoot.png")));
+            downShoot  = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_down_shoot.png")));
+            leftShoot  = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_left_shoot.png")));
+            rightShoot = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_right_shoot.png")));
+
+            upAttack1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_up_attack_1.png")));
+            upAttack2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_up_attack_2.png")));
+            downAttack1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_down_attack_1.png")));
+            downAttack2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_down_attack_2.png")));
+            leftAttack1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_left_attack_1.png")));
+            leftAttack2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_left_attack_2.png")));
+            rightAttack1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_right_attack_1.png")));
+            rightAttack2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("player/combat/player_right_attack_2.png")));
 
 
 
@@ -207,49 +219,85 @@ public class Player extends Entity {
 
         //COMBAT
 
-        boolean isShooting = keyH.upShootPressed || keyH.downShootPressed || keyH.leftShootPressed || keyH.rightShootPressed;
-
-        if (keyH.upShootPressed) {
-            combatDirection = "up";
-            currentMaxSpeed = 2.5;
-        }
-        else if (keyH.downShootPressed) {
-            combatDirection = "down";
-            currentMaxSpeed = 2.5;
-        }
-        else if (keyH.leftShootPressed) {
-            combatDirection = "left";
-            currentMaxSpeed = 2.5;
-        }
-        else if (keyH.rightShootPressed) {
-            combatDirection = "right";
-            currentMaxSpeed = 2.5;
-        }
-        else {
-            combatDirection = "idle";
+        if(keyH.qPressed) {
+            combatState = combatState.next();
+            keyH.qPressed = false;
+            System.out.println("keyH.qPressed");
         }
 
-        if (isShooting && !combatDirection.equals("idle")) {
+        if(combatState == CombatState.RANGE) {
+            boolean isShooting = keyH.upShootPressed || keyH.downShootPressed || keyH.leftShootPressed || keyH.rightShootPressed;
 
-            if (shotCooldownCounter == 0) {
-
-                double startX = worldX + (gp.tileSize / 2.0);
-                double startY = worldY + (gp.tileSize / 2.0);
-
-                Bullet bullet = new Bullet.Builder(gp.tileSize)
-                        .startPosition(startX, startY)
-                        .direction(combatDirection)
-                        .speed(10)
-                        .rangeTiles(5)
-                        .damage(1)
-                        .build();
-
-                gp.bulletManager.addBullet(bullet);
-                gp.playSoundEffect(1);
-
-                shotCooldownCounter = shotCooldownFrames;
+            if (keyH.upShootPressed) {
+                combatDirection = "up";
+                currentMaxSpeed = 2.5;
             }
+            else if (keyH.downShootPressed) {
+                combatDirection = "down";
+                currentMaxSpeed = 2.5;
+            }
+            else if (keyH.leftShootPressed) {
+                combatDirection = "left";
+                currentMaxSpeed = 2.5;
+            }
+            else if (keyH.rightShootPressed) {
+                combatDirection = "right";
+                currentMaxSpeed = 2.5;
+            }
+            else {
+                combatDirection = "idle";
+            }
+
+            if (isShooting && !combatDirection.equals("idle")) {
+
+                if (shotCooldownCounter == 0) {
+
+                    double startX = worldX + (gp.tileSize / 2.0);
+                    double startY = worldY + (gp.tileSize / 2.0);
+
+                    Bullet bullet = new Bullet.Builder(gp.tileSize)
+                            .startPosition(startX, startY)
+                            .direction(combatDirection)
+                            .speed(10)
+                            .rangeTiles(5)
+                            .damage(1)
+                            .build();
+
+                    gp.bulletManager.addBullet(bullet);
+                    gp.playSoundEffect(1);
+
+                    shotCooldownCounter = shotCooldownFrames;
+                }
+            }
+
         }
+        if(combatState == CombatState.MELEE) {
+            boolean isAttacking = keyH.upShootPressed || keyH.downShootPressed || keyH.leftShootPressed || keyH.rightShootPressed;
+
+            if (keyH.upShootPressed) {
+                combatDirection = "up";
+                currentMaxSpeed = 2.5;
+            }
+            else if (keyH.downShootPressed) {
+                combatDirection = "down";
+                currentMaxSpeed = 2.5;
+            }
+            else if (keyH.leftShootPressed) {
+                combatDirection = "left";
+                currentMaxSpeed = 2.5;
+            }
+            else if (keyH.rightShootPressed) {
+                combatDirection = "right";
+                currentMaxSpeed = 2.5;
+            }
+            else {
+                combatDirection = "idle";
+            }
+
+
+        }
+
+
 
 
         // NORMALIZE DIAGONAL MOVEMENT
@@ -400,18 +448,95 @@ public class Player extends Entity {
                 }
 
             }
-        }else {
-        switch (combatDirection) {
-            case "up" : image = upShoot; break;
-            case "down" : image = downShoot; break;
-            case "left" : image = leftShoot; break;
-            case "right": image = rightShoot ; break;
+        } else {
+            if(combatState == CombatState.RANGE){
+                switch (combatDirection) {
+                    case "up" : image = upShoot; break;
+                    case "down" : image = downShoot; break;
+                    case "left" : image = leftShoot; break;
+                    case "right": image = rightShoot ; break;
+                }
+            }
+            if(combatState == CombatState.MELEE){
+                switch (combatDirection) {
+                    case "up":
+                        if (spriteNum == 1) {
+                            image = upAttack2;
+                        }
+                        if (spriteNum == 2) {
+                            image = upAttack1;
+                        }
+                        break;
+                    case "left":
+                        if (spriteNum == 1) {
+                            image = leftAttack2;
+                        }
+                        if (spriteNum == 2) {
+                            image = leftAttack1;
+                        }
+                        break;
+                    case "right":
+                        if (spriteNum == 1) {
+                            image = rightAttack2;
+                        }
+                        if (spriteNum == 2) {
+                            image = rightAttack1;
+                        }
+                        break;
+                    case "down":
+                        if (spriteNum == 1) {
+                            image = downAttack2;
+                        }
+                        if (spriteNum == 2) {
+                            image = downAttack1;
+                        }
+                        break;
+                }
+            }
         }
-        }
+        int drawW = image.getWidth() * gp.scale;
+        int drawH = image.getHeight() * gp.scale;
 
-        g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+        Point p = computeDrawPosition(drawW, drawH);
+        g2.drawImage(image, p.x, p.y, drawW, drawH, null);
 
-
-        }
     }
+
+    private Point computeDrawPosition(int drawW, int drawH) {
+
+        int anchorX = screenX + gp.tileSize / 2;
+        int anchorY = screenY + gp.tileSize;
+
+        int drawX = anchorX - drawW / 2;
+        int drawY = anchorY - drawH;
+
+        boolean isMeleeSprite = (combatState == CombatState.MELEE && !"idle".equals(combatDirection));
+        if (!isMeleeSprite) {
+            return new Point(drawX, drawY);
+        }
+
+        int extraW = drawW - gp.tileSize;
+
+        switch (combatDirection) {
+            case "right":
+                drawX = screenX;
+                break;
+
+            case "left":
+                drawX = screenX - extraW;
+                break;
+
+            case "down":
+                drawY = screenY;
+                drawX = screenX - extraW / 2;
+                break;
+
+            case "up":
+            default:
+                break;
+        }
+
+        return new Point(drawX, drawY);
+    }
+}
 
