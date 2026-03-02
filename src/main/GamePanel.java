@@ -25,26 +25,25 @@ public class GamePanel extends JPanel implements Runnable {
 
     int FPS = 60;
 
-    KeyHandler keyH = new KeyHandler();
-    Sound sound = new Sound();
+    KeyHandler keyH = new KeyHandler(this);
+    Sound music = new Sound();
+    Sound se = new Sound();
 
     public CollisionChecker cChecker = new CollisionChecker(this);
     public AssetSetter aSetter = new AssetSetter(this);
-
+    public UI ui = new UI(this);
     Thread gameThread;
-
-    public Player player = new Player(this, keyH);
-
     TileManager tileM = new TileManager(this);
-
     public BulletManager bulletManager = new BulletManager(this);
 
+
+    //entity
+    public Player player = new Player(this, keyH);
     public SuperObject[] obj = new SuperObject[10]; //how many object u can display on the same time
 
 
-
-
-
+    //game state
+    public GameState gameState;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -56,8 +55,8 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void setupGame(){
         aSetter.setObject();
-
         playMusic(0);
+        gameState = GameState.PLAYING;
     }
 
     public void startGameThread() {
@@ -104,7 +103,15 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-        player.update();     bulletManager.update();
+        if (gameState == GameState.PLAYING) {
+            player.update();
+            bulletManager.update();
+        }
+        if (gameState == GameState.PAUSED) {
+            /// ///////
+        }
+
+
     }
 
     public void paintComponent(Graphics g) {
@@ -124,23 +131,23 @@ public class GamePanel extends JPanel implements Runnable {
 
         player.draw(g2);
 
-
+        ui.draw(g2);
 
         g2.dispose();
     }
 
     public void playMusic(int i) {
-        sound.setFile(i);
-        sound.play();
-        sound.loop();
+        music.setFile(i);
+        music.play();
+        music.loop();
     }
 
     public void pauseMusic(int i) {
-        sound.stop();
+        music.stop();
     }
 
     public void playSoundEffect(int i) {
-        sound.setFile(i);
-        sound.play();
+        se.setFile(i);
+        se.play();
     }
 }

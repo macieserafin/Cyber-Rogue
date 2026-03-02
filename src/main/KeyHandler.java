@@ -9,9 +9,14 @@ public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
     public boolean upShootPressed, downShootPressed, leftShootPressed, rightShootPressed;
     public boolean shiftPressed, spacePressed;
-    public boolean qPressed;
+    public boolean qPressed, pPressed;
+
+    GamePanel gp;
 
 
+    public KeyHandler(GamePanel gp) {
+        this.gp = gp;
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -57,6 +62,18 @@ public class KeyHandler implements KeyListener {
         if (code == KeyEvent.VK_Q) {
             qPressed = true;
         }
+
+        if (code == KeyEvent.VK_P) {
+            qPressed = true;
+            if(gp.gameState == GameState.PLAYING) {
+                gp.gameState = GameState.PAUSED;
+                gp.pauseMusic(0);
+            }
+            else if(gp.gameState == GameState.PAUSED) {
+                gp.gameState = GameState.PLAYING;
+                gp.playMusic(0);
+            }
+        }
     }
 
     @Override
@@ -98,6 +115,10 @@ public class KeyHandler implements KeyListener {
 
         if (code == KeyEvent.VK_Q) {
             qPressed = false;
+        }
+
+        if (code == KeyEvent.VK_P) {
+            qPressed = true;
         }
     }
 }

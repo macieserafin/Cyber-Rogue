@@ -36,23 +36,21 @@ public class Player extends Entity {
     private int shotCooldownCounter = 0;
     private int shotCooldownFrames = 12; // 12 klatek przy 60 FPS -> 5 strzałów na sekundę
 
-    CombatState combatState = CombatState.RANGE;
-
-    int hasKey = 0;
+    public CombatState combatState = CombatState.RANGE;
 
     // MELEE ATTACK STATE
     private boolean meleeAttacking = false;
-
     private int meleeFrame = 0;
 
-
-
-    private final int MELEE_WINDUP_FRAMES = 6;   // króciutka pauza: attack1
-    private final int MELEE_STRIKE_FRAMES = 5;   // szybkie uderzenie: attack2
-    private final int MELEE_RECOVER_FRAMES = 10; // ciężar po uderzeniu
-
+    private final int MELEE_WINDUP_FRAMES = 6;
+    private final int MELEE_STRIKE_FRAMES = 5;
+    private final int MELEE_RECOVER_FRAMES = 10;
 
     private boolean meleeAttackHeldLastFrame = false;
+
+    //PLAYER STATUS
+    public int hasKey = 0;
+    public int health = 3;
 
 
     public Player(GamePanel gp, KeyHandler keyH) {
@@ -62,7 +60,7 @@ public class Player extends Entity {
         screenX = gp.screenWidth/2 - (gp.tileSize/2);
         screenY = gp.screenHeight/2- (gp.tileSize/2);
 
-        solidArea = new Rectangle(8 , 16, 32, 32); //hitbox
+        solidArea = new Rectangle(9 , 29, 28, 20); //hitbox
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
@@ -389,6 +387,7 @@ public class Player extends Entity {
                     hasKey++;
                     gp.obj[i] = null;
                     gp.playSoundEffect(3);
+                    gp.ui.showMessage("You picked up key");
                     break;
 
                 case "Door":
@@ -396,7 +395,7 @@ public class Player extends Entity {
                             gp.obj[i] = null;
                             hasKey--;
                             gp.playSoundEffect(2);
-                        }
+                        }else gp.ui.showMessage("You need a key!");
                         break;
 
                 case "Boots":
@@ -511,9 +510,16 @@ public class Player extends Entity {
         Point p = computeDrawPosition(drawW, drawH);
         g2.drawImage(image, p.x, p.y, drawW, drawH, null);
 
-        g2.setFont(new Font("Consolas", Font.PLAIN, 18));
-        g2.setColor(Color.WHITE);
-        g2.drawString("Combat mode (Q): " + combatState, 30, 30);
+
+        //dev
+
+        g2.setColor(Color.RED);
+        g2.drawRect(screenX + solidArea.x, screenY + solidArea.y, solidArea.width, solidArea.height);
+
+        g2.setColor(Color.RED);
+
+
+
 
 
     }
