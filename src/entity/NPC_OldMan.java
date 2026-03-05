@@ -16,6 +16,7 @@ public class NPC_OldMan extends Entity {
 
         setDefaultValues();
         getNPCImage();
+        setDialogue();
     }
 
     public void setDefaultValues(){
@@ -80,6 +81,17 @@ public class NPC_OldMan extends Entity {
         }
     }
 
+    public void setDialogue(){
+        dialogues[0] = "Get the fuck out of my house.";
+        dialogues[1] = "Get lost.";
+        dialogues[2] = "U smell like shit.";
+        dialogues[3] = "bgwoagubaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    }
+
+    public void speak(){
+        super.speak();
+
+    }
 
 
 

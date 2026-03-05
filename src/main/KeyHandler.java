@@ -8,7 +8,7 @@ import java.util.Deque;
 public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
     public boolean upShootPressed, downShootPressed, leftShootPressed, rightShootPressed;
-    public boolean shiftPressed, spacePressed;
+    public boolean shiftPressed, spacePressed, enterPressed;
     public boolean qPressed, pPressed;
 
     GamePanel gp;
@@ -27,53 +27,68 @@ public class KeyHandler implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
 
-        if (code == KeyEvent.VK_W) {
-            upPressed = true;
-        }
-        if (code == KeyEvent.VK_S) {
-            downPressed = true;
-        }
-        if (code == KeyEvent.VK_A) {
-            leftPressed = true;
-        }
-        if (code == KeyEvent.VK_D) {
-            rightPressed = true;
-        }
+        if(gp.gameState == GameState.PLAYING){
+            if (code == KeyEvent.VK_W) {
+                upPressed = true;
+            }
+            if (code == KeyEvent.VK_S) {
+                downPressed = true;
+            }
+            if (code == KeyEvent.VK_A) {
+                leftPressed = true;
+            }
+            if (code == KeyEvent.VK_D) {
+                rightPressed = true;
+            }
 
-        if (code == KeyEvent.VK_UP) {
-            upShootPressed = true;
-        }
-        if (code == KeyEvent.VK_DOWN) {
-            downShootPressed = true;
-        }
-        if (code == KeyEvent.VK_LEFT) {
-            leftShootPressed = true;
-        }
-        if (code == KeyEvent.VK_RIGHT) {
-            rightShootPressed = true;
-        }
+            if (code == KeyEvent.VK_UP) {
+                upShootPressed = true;
+            }
+            if (code == KeyEvent.VK_DOWN) {
+                downShootPressed = true;
+            }
+            if (code == KeyEvent.VK_LEFT) {
+                leftShootPressed = true;
+            }
+            if (code == KeyEvent.VK_RIGHT) {
+                rightShootPressed = true;
+            }
 
-        if (code == KeyEvent.VK_SPACE) {
-            spacePressed = true;
-        }
-        if (code == KeyEvent.VK_SHIFT) {
-            shiftPressed = true;
-        }
-        if (code == KeyEvent.VK_Q) {
-            qPressed = true;
-        }
+            if (code == KeyEvent.VK_SPACE) {
+                spacePressed = true;
+            }
+            if (code == KeyEvent.VK_SHIFT) {
+                shiftPressed = true;
+            }
+            if (code == KeyEvent.VK_Q) {
+                qPressed = true;
+            }
 
-        if (code == KeyEvent.VK_P) {
-            qPressed = true;
-            if(gp.gameState == GameState.PLAYING) {
+            if (code == KeyEvent.VK_P) {
+                pPressed = true;
                 gp.gameState = GameState.PAUSED;
                 gp.pauseMusic(0);
             }
-            else if(gp.gameState == GameState.PAUSED) {
+
+            if (code == KeyEvent.VK_ENTER) {
+                enterPressed = true;
+
+            }
+        }
+        else if(gp.gameState == GameState.PAUSED) {
+            if (code == KeyEvent.VK_P) {
+                pPressed = true;
                 gp.gameState = GameState.PLAYING;
                 gp.playMusic(0);
             }
+
         }
+        else if(gp.gameState == GameState.DIALOGUE) {
+            if (code == KeyEvent.VK_ENTER) {
+                gp.gameState = GameState.PLAYING;
+            }
+        }
+
     }
 
     @Override
@@ -118,7 +133,7 @@ public class KeyHandler implements KeyListener {
         }
 
         if (code == KeyEvent.VK_P) {
-            qPressed = true;
+            pPressed = false;
         }
     }
 }

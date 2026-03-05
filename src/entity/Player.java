@@ -1,6 +1,7 @@
 package entity;
 
 import main.GamePanel;
+import main.GameState;
 import main.KeyHandler;
 
 import javax.imageio.ImageIO;
@@ -389,8 +390,14 @@ public class Player extends Entity {
     public void interactNPC(int i){
 
         if(i != 999){
-            System.out.println("NPC interacted");
+            if(gp.keyH.enterPressed)
+            {
+                gp.gameState = GameState.DIALOGUE;
+                gp.npc[i].speak();
+            }
+
         }
+        gp.keyH.enterPressed = false;
 
     }
 
