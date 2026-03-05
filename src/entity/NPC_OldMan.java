@@ -1,0 +1,88 @@
+package entity;
+
+import main.GamePanel;
+
+import javax.imageio.ImageIO;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Random;
+
+public class NPC_OldMan extends Entity {
+    private int walkPixelsLeft = 0;
+
+
+    public NPC_OldMan(GamePanel gp) {
+        super(gp);
+
+        setDefaultValues();
+        getNPCImage();
+    }
+
+    public void setDefaultValues(){
+        speed = 1;
+        direction = "down";
+    }
+
+    public void getNPCImage() {
+        try {
+            up1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_up_1.png")));
+            up2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_up_2.png")));
+            down1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_down_1.png")));
+            down2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_down_2.png")));
+            left1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_left_1.png")));
+            left2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_left_2.png")));
+            right1 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_right_1.png")));
+            right2 = ImageIO.read(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("npc/oldman_right_2.png")));
+
+
+
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void setAction(){
+
+        if (walkPixelsLeft > 0) {
+            walkPixelsLeft -= speed;
+
+            if (walkPixelsLeft <= 0) {
+                walkPixelsLeft = 0;
+                direction = "idle";
+                actionLockCounter = 0;
+            }
+            return;
+        }
+
+        actionLockCounter++;
+
+        if(actionLockCounter >= 120){
+
+            Random rand = new Random();
+            int i = rand.nextInt(100) + 1;
+
+            if (i <= 50) {
+                direction = "idle";
+            }
+            else {
+                int dir = rand.nextInt(4);
+                if(dir == 0) direction = "up";
+                if(dir == 1) direction = "down";
+                if(dir == 2) direction = "left";
+                if(dir == 3) direction = "right";
+
+                int tilesToWalk = rand.nextInt(2) + 2;
+                walkPixelsLeft = tilesToWalk * gp.tileSize;
+            }
+
+            actionLockCounter = 0;
+        }
+    }
+
+
+
+
+
+
+}

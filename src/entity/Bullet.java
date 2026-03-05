@@ -25,7 +25,8 @@ public class Bullet extends Entity {
 
     public BufferedImage image;
 
-    public Bullet() {
+    public Bullet(GamePanel gp) {
+        super(gp);
         solidArea = new Rectangle(0, 0, 8, 8);
         solidAreaDefaultX = 0;
         solidAreaDefaultY = 0;
@@ -134,9 +135,9 @@ public class Bullet extends Entity {
         private Bullet bullet;
         private int tileSize;
 
-        public Builder(int tileSize) {
+        public Builder(int tileSize, GamePanel gp) {
             this.tileSize = tileSize;
-            this.bullet = new Bullet();
+            this.bullet = new Bullet(gp);
 
             this.bullet.setSpeed(10);
             this.bullet.setMaxDistancePixels(5 * this.tileSize);

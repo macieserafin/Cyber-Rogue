@@ -13,7 +13,6 @@ import entity.Bullet;
 
 public class Player extends Entity {
 
-    GamePanel gp;
     KeyHandler keyH;
 
     public final int screenX;
@@ -53,17 +52,21 @@ public class Player extends Entity {
     public int health = 3;
 
 
+
+
     public Player(GamePanel gp, KeyHandler keyH) {
-        this.gp = gp;
+        super(gp);
         this.keyH = keyH;
 
         screenX = gp.screenWidth/2 - (gp.tileSize/2);
         screenY = gp.screenHeight/2- (gp.tileSize/2);
 
-        solidArea = new Rectangle(9 , 29, 28, 20); //hitbox
+        solidArea = new Rectangle(9 , 29, 28, 20);
 
         solidAreaDefaultX = solidArea.x;
         solidAreaDefaultY = solidArea.y;
+
+        hitBox = new Rectangle(9 , 0, 29, 48);
 
         setDefaultValues();
         getPlayerImage();
@@ -168,8 +171,13 @@ public class Player extends Entity {
         collisionOn = false;
         gp.cChecker.checkTile(this);
 
+        //OBJECTS
         int objIndex = gp.cChecker.checkObject(this, true);
         pickUpObject(objIndex);
+
+        //CHECK NPC COLLISION
+        int npcIndex = gp.cChecker.checkEntity(this, gp.npc);
+        interactNPC(npcIndex);
 
 
         // OPPOSITE DIRECTION BRAKING
@@ -266,7 +274,7 @@ public class Player extends Entity {
                     double startX = worldX + (gp.tileSize / 2.0);
                     double startY = worldY + (gp.tileSize / 2.0);
 
-                    Bullet bullet = new Bullet.Builder(gp.tileSize)
+                    Bullet bullet = new Bullet.Builder(gp.tileSize, gp)
                             .startPosition(startX, startY)
                             .direction(combatDirection)
                             .speed(10)
@@ -373,6 +381,15 @@ public class Player extends Entity {
             }
 
             spriteCounter = 0;
+        }
+
+
+    }
+
+    public void interactNPC(int i){
+
+        if(i != 999){
+            System.out.println("NPC interacted");
         }
 
     }
@@ -513,10 +530,11 @@ public class Player extends Entity {
 
         //dev
 
-        g2.setColor(Color.RED);
+        g2.setColor(Color.GREEN);
         g2.drawRect(screenX + solidArea.x, screenY + solidArea.y, solidArea.width, solidArea.height);
 
         g2.setColor(Color.RED);
+        g2.drawRect(screenX + hitBox.x, screenY + hitBox.y, hitBox.width, hitBox.height);
 
 
 
