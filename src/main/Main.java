@@ -12,7 +12,7 @@ public class Main {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
         window.setSize(800, 600);
-        window.setTitle("Cyber Rogue");
+        window.setTitle("Sisyphus the Mushroom");
 
 
         GamePanel gamePanel = new GamePanel();
